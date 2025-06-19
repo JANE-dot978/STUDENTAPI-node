@@ -21,5 +21,21 @@
         next(error);
     }
 },
+login: async(req, res, next)=>{
+    try{
+        const result = await authSchema.validateAsync(req.body)
+        const user = await User.findOne({email: result.email})
+        if(!user) throw createError.NotFound('User not registered')
+
+            //matching the password
+            const isMatch = await user.isValidPassword(result.password)
+            if(!isMatch) throw createError.Unauthorized('usernmame/password not valid')
+                res.send('login successfull')
+    }catch (error){
+        if(error.isJoi ===true)
+            return next(createError.BadRequest('invalid username/password'))
+        next(error)
+    }
+}
  };
 
