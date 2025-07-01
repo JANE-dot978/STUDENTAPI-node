@@ -78,6 +78,9 @@ module.exports = {
       const user = await User.findOne({ email: result.email });
       if (!user) throw createError.NotFound('User not registered');
 
+      console.log('user found:', user.email);
+      console.log('password entered:', result.password);
+
       // Check password
       const isMatch = await user.isValidPassword(result.password);
       if (!isMatch) throw createError.Unauthorized('Username or password not valid');

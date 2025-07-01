@@ -1,21 +1,14 @@
 const express = require('express');
-const cors =require('cors')
+const cors = require('cors');
 require('dotenv').config();
 require('./helpers/init_mongodb');
 const app = express();
-const studentRoutes = require( './routes/studentRoutes');
-const userroutes = require('./routes/userroutes')
 
-// app.use(cors({
-//   credentials: true,
-//   origin: 'http://localhost:3000'
-// }));
+const studentRoutes = require('./routes/studentRoutes');
+const userroutes = require('./routes/userroutes');
 
-// const cors = require('cors');
-app.use(cors()); // 👈 Enable CORS globally
+app.use(cors());
 
-
-// ✅ Custom headers for Safari, mobile, strict CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -24,34 +17,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// const routes = require('./routes/studentRoutes');
-app.use(express.json()) 
-app.use('/api/auth', userroutes);
+app.use(express.json());
 
+// ✅ Mount user routes at /api so it matches frontend
+app.use('/api', userroutes);
+app.use('/api/students', studentRoutes);  
+
+// ✅ Student routes (if needed)
 app.use(studentRoutes);
 
-
-//handling error 404
-app.use((req, res, next)=>{
-    const err = new Error("Not Found");
-    err.status = 404
-    next(err)
-})
-
-//error handler
-app.use((err, req, res, next) =>{
-    res.status(err.status || 500)
-    res.send({
-        error:{
-            status: err.status || 500,
-            message: err. message
-        }
-    })
-})
-
-app.listen(process.env.PORT || 4000, function() {
-    console.log('Now listening for requests on: http://localhost:4000');
+// 404 handler
+app.use((req, res, next) => {
+  const err = new Error("Not Found");
+  err.status = 404;
+  next(err);
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).send({
+    error: {
+      status: err.status || 500,
+      message: err.message,
+    },
+  });
+});
 
-
+app.listen(process.env.PORT || 4000, () => {
+  console.log('Now listening on http://localhost:4000');
+});
